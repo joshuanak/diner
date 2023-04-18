@@ -21,11 +21,11 @@ $f3 = Base::instance();
 // Define a default route
 $f3->route('GET /', function() {
 
-    echo '<h1>Welcome to My Diner!</h1>';
+    //echo '<h1>Welcome to My Diner!</h1>';
 
     // Display a view page
-    //$view = new Template();
-    //echo $view->render('views/home.html');
+    $view = new Template();
+    echo $view->render('views/home.html');
 });
 
 
