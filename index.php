@@ -59,9 +59,19 @@ $f3->route('GET /dinner', function() {
 });
 
 // Define the "/order1" -> orderForm1.html
-$f3->route('GET /order1', function() {
+$f3->route('GET|POST /order1', function($f3) {
 
-    //echo '<h1>Order Form 1</h1>';
+    // if the form has been posted
+    if ($_SERVER['REQUEST_METHOD'] == "POST");
+
+        // Get the data
+
+        // Validate the data
+
+        // Store the data in the session array
+
+        // Redirect to order2 route
+        $f3->reroute('order2');
 
     // Display a view page
     $view = new Template();
@@ -70,8 +80,6 @@ $f3->route('GET /order1', function() {
 
 // Define the "/order2" -> orderForm1.html
 $f3->route('GET /order2', function() {
-
-    //echo '<h1>Order Form 2</h1>';
 
     // Display a view page
     $view = new Template();
