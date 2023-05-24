@@ -11,8 +11,16 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// Require the autoload file
+// Require the needed files
 require_once('vendor/autoload.php');
+require_once('model/data-layer.php');
+require_once('model/validation.php');
+
+//if (validMeal('lunch')) {
+//    print ('valid');
+//} else {
+//    print ('not valid');
+//}
 
 // Create an F3 object
 $f3 = Base::instance();
@@ -58,7 +66,6 @@ $f3->route('GET /dinner', function() {
     echo $view->render('views/menus/dinner.html');
 });
 
-
 // Define the happy hour route
 $f3->route('GET /happy-hour', function() {
 
@@ -72,50 +79,99 @@ $f3->route('GET /happy-hour', function() {
 // Define the "/order1" -> orderForm1.html
 $f3->route('GET|POST /order1', function($f3) {
 
+    $food = "";
+    $meal = "";
+
     // if the form has been posted
     if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
-        // Get the data
+        // Get the data from the POST array
         // ["food"]=> string(7) "waffles" ["meal"]=> string(9) "breakfast"
-        var_dump($_POST);
-        $food = $_POST['food'];
-        $meal = $_POST['meal'];
-        //echo ("Food: $food, Meal: $meal");
+        // var_dump($_POST);
+        if (isset($_POST['food'])) {
+            $food = $_POST['food'];
+        }
+        if (isset($_POST['meal'])) {
+            $meal = $_POST['meal'];
+        }
+
+        // echo ("Food: $food, Meal: $meal");
 
         // Validate the data
+        if (validMeal($meal)) {
+            $f3->set('SESSION.meal', $meal);
+        }
+        // Meal is not valid -> set an error variable
+        else {
+            $f3->set('errors["meals"]', 'Invalid meal selected');
+        }
 
-        // Store the data in the session array
+        if (validFood($food)) {
+            $f3->set('SESSION.food', $food);
+        }
+        // Meal is not valid -> set an error variable
+        else {
+            $f3->set('errors["food"]', 'invalid food entered');
+        }
+
+        // if the food is valid save it to the session
         $f3->set('SESSION.food', $food);
         $f3->set('SESSION.meal', $meal);
         // $_SESSION['food'] = $food;
 
-        // Redirect to order2 route
-        $f3->reroute('order2');
+        // Redirect to order2 route if there are no errors
+        if (empty($f3->get('errors'))) {
+            $f3->reroute('order2');
+        }
     }
+
+    // Get the data from the model and add to hive
+    $f3->set('meals', getMeals());
+
+    // Add user data to the hive
+    $f3->set('userFood', $food);
+    $f3->set('userMeal', $meal);
 
     // Display a view page
     $view = new Template();
     echo $view->render('views/orderForm1.html');
 });
 
-// Define the "/order1" -> orderForm1.html
+// Create a route "/order2" -> orderForm2.html
 $f3->route('GET|POST /order2', function($f3) {
 
-    // if the form has been posted
+    //Initialize condiments array
+    $selectedCondiments = array();
+
+    // If the form has been posted
     if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
-        // get the data
-        //var_dump($_POST);
-        // ["conds"]=> array(1) { [0]=> string(7) "ketchup"
-        $conds = implode(", ", $_POST['conds']);
-        //echo $conds;
+        // If condiments have been selected
+        if (!empty($_POST['conds'])) {
 
-        // store the data in the session array
-        $f3->set('SESSION.condiments', $conds);
+            // Get condiments
+            $selectedCondiments = $_POST['conds'];
 
-        // redirect to the summary route
-        $f3->reroute('summary');
+            // Validate condiments
+            if (validCondiments($selectedCondiments)) {
+                // Implode and add to session array
+                $f3->set('SESSION.condiments', implode(", ", $selectedCondiments));
+            }
+            else {
+                // Set error in F3 hive
+                $f3->set('errors["conds"]', 'Go away, evildoer!');
+            }
+        }
+
+        //Redirect to the summary route if there are no errors
+        if (empty($f3->get('errors'))) {
+            $f3->reroute('summary');
+        }
     }
+
+    // Get the data from the model and add to hive
+    $f3->set('condiments', getCondiments());
+
     // Display a view page
     $view = new Template();
     echo $view->render('views/orderForm2.html');
