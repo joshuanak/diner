@@ -16,14 +16,12 @@ require_once('vendor/autoload.php');
 require_once('model/data-layer.php');
 require_once('model/validation.php');
 
-//if (validMeal('lunch')) {
-//    print ('valid');
-//} else {
-//    print ('not valid');
-//}
+$dataLayer = new DataLayer();
 
 // Create an F3 object
 $f3 = Base::instance();
+$con = new Controller($f3);
+
 // Base $f3 = new Base();
 
 // Define a default route
